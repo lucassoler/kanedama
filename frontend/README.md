@@ -36,13 +36,12 @@ A clone or fork of this repositery containing:
 
 - An integration of the wireframe above, with the data flow described in this brief
 - A README file at the root of your repo explaining your approach, design choices, improvements and next steps
+- Some tests (what to test and the types of tests are at your appreciation)
 
 Bonus:
 
-- Tests
 - Deployed app
 - Atomic, reusable and stateless base components
-- Components positionned by the container (parent)
 
 Our stack consists of TypeScript, React, [Next.js](https://nextjs.org/), CSS-in-JS with [styled-component](https://styled-components.com/), and we test with Jest and Cypress.
 
