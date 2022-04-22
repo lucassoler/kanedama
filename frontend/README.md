@@ -35,19 +35,23 @@ You will need to leverage an open API for business data to fill in the details a
 A clone or fork of this repositery containing:
 
 - An integration of the wireframe above, with the data flow described in this brief
-- A README file at the root of your repo explaining your approach, design choices, improvements and next steps
 - Some tests (what to test and the types of tests are at your appreciation)
+- A README file at the root of your repo explaining 
+  - your approach and design choices
+  - how long did it take you to complete the test? (you are not evaluated on your rapidity)
+  - if you had to do a second iteration, what would you add or improve?
 
 Bonus:
 
 - Deployed app
 - Atomic, reusable and stateless base components
+- Add a UI interaction of your choice: a button, a dialog, a filter, a second user page, etc. 
 
 Our stack consists of TypeScript, React, [Next.js](https://nextjs.org/), CSS-in-JS with [styled-component](https://styled-components.com/), and we test with Jest and Cypress.
 
 If you're comfortable with it, we encourage you to complete the test in the stack described above. You're also free to use a component library to get you started and any other package that you might think necessary.
 
-We expect you to test your code: unit and end-to-end tests are a big plus. From our experience React Testing Library and Cypress work very well for React application testing, but you're free to pick your favourite.
+We expect you to test your code: unit and end-to-end tests are a big plus. From our experience React Testing Library (on top of Jest) and Cypress work very well for React application testing, but you're free to pick your favourite.
 
 ### What We Care About
 
