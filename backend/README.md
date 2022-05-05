@@ -37,13 +37,15 @@ We'd like to have JSON logs outputted in the stdout
 ### Health check
 The `/healthz` endpoint is used to know when its ok to send HTTP traffic to the app (when it responds `200`).
 
-The app will be automatically restarted when it quits.
+The app will be automatically restarted when it quits (so you don't have to care about this mechanism).
 
 ### Start db
 
 ```
 docker run -e POSTGRES_PASSWORD=password -d -p5432:5432 postgres
 ```
+
+Just in case you need one. By the way, we don't expect you to dockerize the application. 
 
 # Note to the candidate
 "prod-ready" can be a very time-consumming process and we don't expect you to spend too long on this test so
