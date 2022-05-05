@@ -1,86 +1,54 @@
-<p align="center"><a href="https://github.com/MansaGroup/kanedama" target="blank"><img src="../.github/assets/logo.png" width="80" alt="Mansa's Logo" /></a></p>
-<h1 align="center">Mansa's Kanedama</h1>
-<p align="center">Take home test to <b>join us</b> 💜</p>
+# Our simple app
 
-## Introduction
+Here's a very basic little app (for now, we have big expectations!).
 
-This project aims to evaluate candidates applying for a position in our
-**engineering squad**.
+We've been told it is production-ready... but, having a look at the code, we're not quite sure about that.
+In fact, we're not even sure it does what we expect: it looks like a bunch of copy/pastes from hello world example.
 
-We encountered a scenario similar to this one during our 1st release and
-we're curious to see your approach to this problem.
+It's not in production yet so the current API contract can be modified.
 
-## The Mission
+Here are the requirements we gave :
 
-Your mission, should you choose to accept it, is to:
+## User registration
+A user can register with a name, a valid email, a valid password
 
-1. Find the **average amount of positive transactions** for the **6 months**
-   prior to the _most recent transaction_. To clarify, the formula is:
-   `sum of positive transactions / number of positive transactions`.
-   Round your result down.
-2. Find the **minimum** and **maximum** balance of the _test user_
-   whole history (all accounts aggregated!). Round your result down.
-3. Check if the user has at least **3 years of transaction history** between
-   the oldest and the most recent transaction (all accounts aggregated!)
+## User login
+A user can login with their email & password, if it's ok, their name will be returned (we said it was a super simple app)
 
-## Delivery
+## Business requirements
 
-To achieve your mission, you'll have to deliver:
+### User
+a user must have a name, an email address, a password
+- the name must be alphanumeric charaters, its lenght must be in `[4, 50]`
+- the email address must contain alphanumeric charaters, a single `@` symbol, its length is `<` 256
+- the password must be alphanumeric charaters, its lenght must be in `[8, 255]`
 
-- A project written in **TypeScript**
-- Using the **NestJS** framework
-- Exposing a `GET /answer` endpoint returning an `AnswerDto`
+We expect not to have duplicate names or email addresses among our users
 
-We want you to write code that meets the highest industry standard. It must be
-**fast**, **robust**, **readable**, and you need to include **tests** as well.
+### User registration
+If invalid values are received during the registration, we expect in return the list of failed validations
 
-Good luck and above all, have fun!
+### Errors
+You're free to handle errors in the way you consider the best
 
-## The Weapons we provide you
+### Logs
+We'd like to have JSON logs outputted in the stdout
 
-We have set up a pretty straightforward REST API with 3 endpoints:
+### Health check
+The `/healthz` endpoint is used to know when its ok to send HTTP traffic to the app (when it responds `200`).
 
-| Method   | Endpoint                                                            | Description                                                                                                                                                                                                                                                                         |
-| -------- | ------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **GET**  | /accounts                                                           | Fetch all bank accounts from a _test user_                                                                                                                                                                                                                                          |
-| **GET**  | /accounts/:account*id/transactions?from=\_start_date*&to=_end_date_ | Fetch the specified _account_id_ transactions from the _start_date_ to the _end_date_. Date are ISO 8601 UTC, so for example `2018-08-13T03:24:00` It can't return more than **365 days** of transactions. If there are no dates specified, the oldest transaction will be returned |
-| **POST** | /answer                                                             | Post your results in the body, the body needs to be of type `AnswerDto`. Every number needs to be rounded to the minimum. JSON content is expected                                                                                                                                  |
+The app will be automatically restarted when it quits.
 
-**Root endpoint is: https://kata.getmansa.tech/**
+### Start db
 
-You can find the _Data Transfer Object_ (DTO) for all request objects, including bodies and responses in the `src/common/dtos` folder.
-
-**Our `POST /answer` endpoint is here to verify your solution. If it's right, you'll get access code and instructions for the next step.**
-
-## Hints
-
-<details>
-<summary>Expected answer</summary>
-
-Here's the expected answer:
-
-```json
-{
-  "6_month_average_income": 407,
-  "3_years_activity": true,
-  "max_balance": 19540,
-  "min_balance": -4285
-}
+```
+docker run -e POSTGRES_PASSWORD=password -d -p5432:5432 postgres
 ```
 
-Here the corresponding cURL command:
+# Note to the candidate
+"prod-ready" can be a very time-consumming process and we don't expect you to spend too long on this test so
+if you think about things that should be done but don't have the time, please write them down in the readme.
 
-```bash
-curl -XPOST https://kata.getmansa.tech/answer \
-	-H 'Content-Type: application/json' \
-	--data-binary @- << EOF
-{
-	"6_month_average_income": 407,
-	"3_years_activity": true,
-	"max_balance": 19540,
-	"min_balance": -4285
-}
-EOF
-```
-
-</details>
+### Side note
+You heard about hexagonal / clean architecture, TDD, BDD, craftsmanship ?
+Show us your skills even if some of these practices seem overkill for such a small app. ;)
