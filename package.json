@@ -11,7 +11,7 @@
   },
   "homepage": "https://github.com/MansaGroup/kanedama#readme",
   "devDependencies": {
-    "@types/jest": "27.5.0",
+    "@types/jest": "27.5.1",
     "prettier": "2.6.2"
   },
   "workspaces": [
