@@ -7,6 +7,7 @@ describe('Register user', () => {
     beforeEach(() => {
         repository = new UserRepositoryInMemory();
     });
+
     describe('register a new user', () => {
         test('should creates a new user', async () => {
             const expectedUser = { 
@@ -15,10 +16,20 @@ describe('Register user', () => {
                 email: "jane.doe@gmail.com", 
                 password: "password" 
             };
-            
+
             await createHandler().handle(createCommand("Jane Doe",  "jane.doe@gmail.com", "password"));
             expect(repository.users.length).toBe(1);
             expect(repository.users[0]).toStrictEqual(expectedUser);
+        });
+    });
+
+    describe('throws an error', () => {
+        test('if name length is not long enough', async () => {
+            await expect(createHandler().handle(createCommand("Jan"))).rejects.toThrowError(new InvalidUserNameError());
+        });
+
+        test('if name length is too long', async () => {
+            await expect(createHandler().handle(createCommand("Lorem ipsum dolor sit amet, consectetur vestibulum."))).rejects.toThrowError(new InvalidUserNameError());
         });
     });
 
@@ -26,11 +37,15 @@ describe('Register user', () => {
         return new RegisterUserCommandHandler(repository);
     }
     
-    function createCommand(name: string, email: string, password: string) {
+    function createCommand(name: string, email: string = "jane.doe@gmail.com", password: string = "password") {
         return new RegisterUserCommand(name, email, password);
     }
     
 });
+
+class InvalidUserNameError extends Error {
+
+}
 
 interface UserRepository {
     nextId(): Promise<string>;
@@ -65,6 +80,12 @@ class RegisterUserCommandHandler implements CommandHandler {
     }
 
     async handle(command: RegisterUserCommand): Promise<void> {
+        if (command.name.length < 4) {
+            throw new InvalidUserNameError();
+        }
+        if (command.name.length > 50) {
+            throw new InvalidUserNameError();
+        }
         const user: User = { 
             id: await this.repository.nextId(),
             name: command.name,
