@@ -115,3 +115,4 @@ I use a try/catch system to handle errors. An other implementation should be to 
 - Keep the first api version (src/poc) up to not break continuous delivery
 - adding a versionning system on controllers
 - implement a swagger documentation
+- add a database migration system (for now it's managed by typeORM)
