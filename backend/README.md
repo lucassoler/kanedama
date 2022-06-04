@@ -65,8 +65,53 @@ Show us your skills even if some of these practices seem overkill for such a sma
 docker compose up -d
 ```
 
+## Endpoints
+
+### Register
+
+path
+```
+POST localhost:8081/api/identity/register
+```
+
+body
+```
+{
+	"name": "test",
+	"password": "password",
+	"email": "test@gmail.com"
+}
+```
+
+### Login
+
+path
+```
+POST localhost:8081/api/identity/login
+```
+
+body
+```
+{
+	"login": "test",
+	"password": "password"
+}
+```
+
 ## WebServer
 
 I chose express because I have more experience on it. 
 I do not have a preference between one framework more than an other, using express or fastify is the same.
-But, in order to not spend time on middlewares and server bootstrapping, I decided to use a boileplate I already made before.
+But, in order to not spend time on middlewares and server bootstrapping, I decided to use a boilerplate I already made before.
+
+## Errors
+
+I use a try/catch system to handle errors. An other implementation should be to return a Response object (or a monad ?) and return http error if Response.Error is set. 
+
+## What could be better ?
+
+- Better error handling system
+- Rework dependency injection system to maintain it easier
+- Keep the first api version (src/poc) up to not break continuous delivery
+- adding a versionning system on controllers
+- implement a swagger documentation
