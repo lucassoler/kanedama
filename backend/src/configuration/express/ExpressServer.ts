@@ -29,6 +29,9 @@ import { router } from './expressRouter';
 
         server.use('/api', router(services));
 
+        server.use(ExpressMiddlewares.domainErrorHandling());
+        server.use(ExpressMiddlewares.notCatchedExceptions());
+
         return server;
     }
 }

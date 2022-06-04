@@ -1,6 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import {validationResult} from "express-validator";
-import createError from 'http-errors';
+import createError, { HttpError } from 'http-errors';
+import { DomainError, DomainValidationError } from "../../sharedKernel/domainError";
 
 export class ExpressMiddlewares {
 
@@ -32,4 +33,53 @@ export class ExpressMiddlewares {
             next();
         }
     }
+
+    static domainErrorHandling() {
+        return (error: DomainError, request: Request, response: Response, next: NextFunction): Response => {
+            let httpError: HttpError = new createError.InternalServerError("Internal Server Error");
+
+            if (error instanceof DomainValidationError)
+                httpError = new createError.BadRequest(error.message);
+
+            const responseBody: CustomErrorResponse = {
+                status_code: httpError.statusCode,
+                error_code: error.code || null,
+                error_name: httpError.name.replace('Error', ''),
+                message: httpError.message
+            };
+
+            if (error.innerExceptions.length > 0) {
+                responseBody.errors = error.innerExceptions.map(e => {
+                    return {
+                        code: e.code,
+                        message: e.message
+                    };
+                })
+            }
+
+            return response.status(httpError.statusCode).send(responseBody);
+        }
+    }
+
+    static notCatchedExceptions() {
+        return (error: DomainError, request: Request, response: Response, next: NextFunction): Response => {
+            let httpError: HttpError = new createError.InternalServerError("Internal Server Error");
+
+            const responseBody: CustomErrorResponse = {
+                status_code: httpError.statusCode,
+                error_code: error.code || null,
+                error_name: httpError.name.replace('Error', ''),
+                message: httpError.message
+            };
+            return response.status(httpError.statusCode).send(responseBody);
+        }
+    }
+}
+
+type CustomErrorResponse = {
+    status_code: number,
+    error_code: string | null,
+    error_name: string,
+    message: string,
+    errors?: Array<{ code: string, message: string }>
 }

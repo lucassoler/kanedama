@@ -108,7 +108,8 @@ describe('REST - Register User', () => {
         const res = await validRequest();
 
         expect(res.status).toBe(500);
-        expect(res.body.error_name).toBe("Internal Server Error");
+        expect(res.body.error_name).toBe("InternalServer");
+        expect(res.body.message).toBe("Internal Server Error");
     });
 
     async function validRequest() {
