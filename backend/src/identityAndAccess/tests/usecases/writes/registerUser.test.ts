@@ -84,9 +84,22 @@ describe('Register user', () => {
             await expect(createHandler().handle(createCommand(NAME_VALID,  "doe.family@gmail.com", PASSWORD_VALID))).rejects.toThrowError(
                 BuildUserInvalidErrors(new EmailAlreadyUsed("doe.family@gmail.com"))
             );
-            
+        });
+
+        test('if a user already registered with this name', async () => {
+            repository.save({ 
+                id: "01a1b5be-7708-4396-ad32-053e0c473f2e", 
+                name: "Jane Doe",
+                email: "jane.doe.old.email@gmail.com", 
+                password: PASSWORD_VALID 
+            });
+
+            await expect(createHandler().handle(createCommand("Jane Doe",  EMAIL_VALID, PASSWORD_VALID))).rejects.toThrowError(
+                BuildUserInvalidErrors(new UserNameAlreadyUsed("Jane Doe"))
+            );
         });
     });
+
 
     describe('throws multiple errors', () => {
         test('if name, email and password are invalids', async () => {
@@ -123,12 +136,21 @@ class EmailAlreadyUsed extends DomainError {
 
 }
 
+class UserNameAlreadyUsed extends DomainError {
+    readonly code = IdentityErrorCodes.UserNameAlreadyUsed;
+
+    constructor(name: string) {
+        super(`name "${name}" is already used by another registered user`);
+    }
+
+}
+
 class UserInvalid extends DomainError {
     readonly errors: Array<DomainError>;
     readonly code = IdentityErrorCodes.UserInvalid;
 
     constructor(errors: Array<DomainError>) {
-        super("user is invalid");
+        super("user is invalid for the following reasons : " + errors.map(x => x.message).join(","));
         this.errors = errors;
     }
 }
@@ -192,6 +214,7 @@ class IdentityErrorCodes {
     static readonly EmailIsTooLong = IdentityErrorCodes.concatErrorCode("4005");
     static readonly EmailIsNotInAValidFormat = IdentityErrorCodes.concatErrorCode("4006");
     static readonly EmailAlreadyUsed = IdentityErrorCodes.concatErrorCode("4007");
+    static readonly UserNameAlreadyUsed = IdentityErrorCodes.concatErrorCode("4008");
 
     private static concatErrorCode(error: string) {
         return IdentityErrorCodes.IDENTITY_ERROR_CODE + error;
@@ -199,9 +222,10 @@ class IdentityErrorCodes {
 }
 
 interface UserRepository {
-    isEmailAlreadyUsed(email: string): Promise<boolean>;
     nextId(): Promise<string>;
     save(user: User): Promise<void>;
+    isUsernameAlreadyUsed(name: string): Promise<boolean>;
+    isEmailAlreadyUsed(email: string): Promise<boolean>;
 }
 
 class UserRepositoryInMemory implements UserRepository {
@@ -214,6 +238,14 @@ class UserRepositoryInMemory implements UserRepository {
 
     isEmailAlreadyUsed(email: string): Promise<boolean> {
         if (this.users.find(x => x.email === email)) {
+            return Promise.resolve(true);
+        }
+
+        return Promise.resolve(false);
+    }
+
+    isUsernameAlreadyUsed(name: string): Promise<boolean> {
+        if (this.users.find(x => x.name === name)) {
             return Promise.resolve(true);
         }
 
@@ -260,7 +292,7 @@ class CreateUserFactory {
 
     async create(name: string, email: string, password: string): Promise<User> {
         var errors: Array<DomainError> = [
-            ...this.verifyUsername(name),
+            ...await this.verifyUsername(name),
             ...await this.verifyEmail(email),
             ...this.verifyPassword(password)
         ];
@@ -313,7 +345,7 @@ class CreateUserFactory {
         return errors;
     }
     
-    verifyUsername(name: string): Array<DomainError> {
+    async verifyUsername(name: string): Promise<Array<DomainError>> {
         var errors: Array<DomainError> = [];
     
         if (name.length < 4) {
@@ -322,6 +354,10 @@ class CreateUserFactory {
     
         if (name.length > 50) {
             errors.push(new UserNameIsTooLong(name));
+        }
+
+        if (await this.repository.isUsernameAlreadyUsed(name)) {
+            errors.push(new UserNameAlreadyUsed(name));
         }
     
         return errors;
