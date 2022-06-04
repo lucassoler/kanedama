@@ -152,29 +152,9 @@ type User = {
 }
 
 function createUserFactory(id: string, name: string, email: string, password: string) {
-    if (name.length < 4) {
-        throw new UserNameIsNotLongEnough(name);
-    }
-
-    if (name.length > 50) {
-        throw new UserNameIsTooLong(name);
-    }
-
-    if (!email.includes("@")) {
-        throw new EmailIsNotInAValidFormat(email);
-    }
-
-    if (email.length > 256) {
-        throw new EmailIsTooLong(email);
-    }
-
-    if (password.length < 8) {
-        throw new PasswordIsNotLongEnough(password);
-    }
-
-    if (password.length > 255) {
-        throw new PasswordIsTooLong(password);
-    }
+    verifyUsername(name);
+    verifyEmail(email);
+    verifyPassword(password);
 
     const user: User = {
         id,
@@ -184,4 +164,34 @@ function createUserFactory(id: string, name: string, email: string, password: st
     };
 
     return user;
+}
+
+function verifyPassword(password: string) {
+    if (password.length < 8) {
+        throw new PasswordIsNotLongEnough(password);
+    }
+
+    if (password.length > 255) {
+        throw new PasswordIsTooLong(password);
+    }
+}
+
+function verifyEmail(email: string) {
+    if (!email.includes("@")) {
+        throw new EmailIsNotInAValidFormat(email);
+    }
+
+    if (email.length > 256) {
+        throw new EmailIsTooLong(email);
+    }
+}
+
+function verifyUsername(name: string) {
+    if (name.length < 4) {
+        throw new UserNameIsNotLongEnough(name);
+    }
+
+    if (name.length > 50) {
+        throw new UserNameIsTooLong(name);
+    }
 }
