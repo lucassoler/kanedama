@@ -99,6 +99,7 @@ describe('Register user', () => {
 
 class UserInvalid extends DomainError {
     readonly errors: Array<DomainError>;
+    readonly code = IdentityErrorCodes.UserInvalid;
 
     constructor(errors: Array<DomainError>) {
         super("user is invalid");
@@ -107,12 +108,15 @@ class UserInvalid extends DomainError {
 }
 
 class EmailIsTooLong extends DomainError {
+    readonly code = IdentityErrorCodes.EmailIsTooLong;
+
     constructor(email: string) {
         super(`email "${email}" is too long`);
     }
 }
 
 class EmailIsNotInAValidFormat extends DomainError {
+    readonly code = IdentityErrorCodes.EmailIsNotInAValidFormat;
 
     constructor(email: string) {
         super(`email "${email}" is not a valid email format`);
@@ -120,26 +124,50 @@ class EmailIsNotInAValidFormat extends DomainError {
 }
 
 class UserNameIsNotLongEnough extends DomainError {
+    readonly code = IdentityErrorCodes.UserNameIsNotLongEnough;
+
     constructor(name: string) {
         super(`username "${name}" is not long enough`);
     }
 }
 
 class UserNameIsTooLong extends DomainError {
+    readonly code = IdentityErrorCodes.UserNameIsTooLong;
+
     constructor(name: string) {
         super(`username "${name}" is too long`);
     }
 }
 
 class PasswordIsNotLongEnough extends DomainError {
+    readonly code = IdentityErrorCodes.PasswordIsNotLongEnough;
+
     constructor(name: string) {
         super(`password "${name}" is not long enough`);
     }
 }
 
 class PasswordIsTooLong extends DomainError {
+    readonly code = IdentityErrorCodes.PasswordIsTooLong;
+
     constructor(name: string) {
         super(`password "${name}" is too long`);
+    }
+}
+
+class IdentityErrorCodes {
+    private static readonly IDENTITY_ERROR_CODE = "IDENTITY_ERR_";
+
+    static readonly UserInvalid = IdentityErrorCodes.concatErrorCode("4000");
+    static readonly UserNameIsNotLongEnough = IdentityErrorCodes.concatErrorCode("4001");
+    static readonly UserNameIsTooLong = IdentityErrorCodes.concatErrorCode("4002");
+    static readonly PasswordIsNotLongEnough = IdentityErrorCodes.concatErrorCode("4003");
+    static readonly PasswordIsTooLong = IdentityErrorCodes.concatErrorCode("4004");
+    static readonly EmailIsTooLong = IdentityErrorCodes.concatErrorCode("4005");
+    static readonly EmailIsNotInAValidFormat = IdentityErrorCodes.concatErrorCode("4006");
+
+    private static concatErrorCode(error: string) {
+        return IdentityErrorCodes.IDENTITY_ERROR_CODE + error;
     }
 }
 
