@@ -2,7 +2,7 @@ import bcrypt from 'bcrypt';
 import { NodeEnvironmentVariables } from "../../../../../configuration/environment/environmentVariables";
 import { BcryptEncryptionService } from "../../../../writes/driven/services/BcryptEncryptionService";
 
-describe('Service - Bcrypt Encryption Service', () => {
+describe('Service - Bcrypt Encryption Service - Encrypt', () => {
     let encryptionService: BcryptEncryptionService;
 
     beforeEach(() => {

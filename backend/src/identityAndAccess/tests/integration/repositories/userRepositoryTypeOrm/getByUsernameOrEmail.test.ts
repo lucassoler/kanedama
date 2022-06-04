@@ -13,8 +13,8 @@ describe('UserRepositoryTypeOrm - GetByUsernameOrEmail', () => {
 
     const USER_EXISTING = {
         id: "48614ce8-9778-4f31-abba-cc1b557a81fa",
-        name: "Jane Doe",
-        email: "jane.doe@gmail.com",
+        name: "Jack Smith",
+        email: "jack.smith@gmail.com",
         password: "Password"
     };
 
