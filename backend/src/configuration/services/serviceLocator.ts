@@ -27,7 +27,7 @@ export const serviceLocator = (): Dependencies => {
 
   const commandDispatcher = new InternalCommandDispatcher();
   commandDispatcher.registerHandlers({
-    ...identityAndAccessCommands(userRepository, createUserFactory)
+    ...identityAndAccessCommands(userRepository, createUserFactory, encryptionService)
   });
 
   return {

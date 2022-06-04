@@ -1,6 +1,5 @@
 import { NodeEnvironmentVariables } from "../../../../../configuration/environment/environmentVariables";
 import { BcryptEncryptionService } from "../../../../writes/driven/services/BcryptEncryptionService";
-import bcrypt from 'bcrypt';
 
 describe('Service - Bcrypt Encryption Service - Compare', () => {
     let encryptionService: BcryptEncryptionService;

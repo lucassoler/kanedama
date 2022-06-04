@@ -3,8 +3,6 @@ import { Dependencies } from '../../../../configuration/services/serviceLocator'
 import { RegisterUserCommand } from '../../usecases/RegisterUserCommand';
 import {checkSchema, ValidationChain} from 'express-validator';
 import { registerUserSchema } from './schema/registerUserSchema';
-import { UserInvalid } from '../../domain/errors/UserInvalid';
-import createError, { HttpError } from 'http-errors';
 
 export const registerUserValidator = (): ValidationChain[] => {
     return checkSchema(registerUserSchema());
