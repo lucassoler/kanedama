@@ -34,29 +34,57 @@ describe('Register user', () => {
 
     describe('throws an error', () => {
         test('if name length is not long enough', async () => {
-            await expect(createHandler().handle(createCommand(NAME_TOO_SHORT))).rejects.toThrowError(new UserNameIsNotLongEnough(NAME_TOO_SHORT));
+            await expect(createHandler().handle(createCommand(NAME_TOO_SHORT))).rejects.toThrowError(
+                BuildUserInvalidErrors(new UserNameIsNotLongEnough(NAME_TOO_SHORT))
+            );
         });
 
         test('if name length is too long', async () => {
-            await expect(createHandler().handle(createCommand(NAME_TOO_LONG))).rejects.toThrowError(new UserNameIsTooLong(NAME_TOO_LONG));
+            await expect(createHandler().handle(createCommand(NAME_TOO_LONG))).rejects.toThrowError(
+                BuildUserInvalidErrors(new UserNameIsTooLong(NAME_TOO_LONG))
+            );
         });
 
         test('if email is not valid', async () => {
-            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_INVALID_FORMAT))).rejects.toThrowError(new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_INVALID_FORMAT))).rejects.toThrowError(
+                BuildUserInvalidErrors(new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT))
+            );
         });
 
         test('if email is too long', async () => {
-            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_TOO_LONG))).rejects.toThrowError(new EmailIsTooLong(EMAIL_TOO_LONG));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_TOO_LONG))).rejects.toThrowError(
+                BuildUserInvalidErrors(new EmailIsTooLong(EMAIL_TOO_LONG))
+            );
         });
 
         test('if password length is not long enough', async () => {
-            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_SHORT))).rejects.toThrowError(new PasswordIsNotLongEnough(PASSWORD_TOO_SHORT));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_SHORT))).rejects.toThrowError(
+                BuildUserInvalidErrors(new PasswordIsNotLongEnough(PASSWORD_TOO_SHORT))
+            );
         });
 
         test('if password length is too long', async () => {
-            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_LONG))).rejects.toThrowError(new PasswordIsTooLong(PASSWORD_TOO_LONG));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_LONG))).rejects.toThrowError(
+                BuildUserInvalidErrors(new PasswordIsTooLong(PASSWORD_TOO_LONG))
+            );
         });
     });
+
+    describe('throws multiple errors', () => {
+        test('if name, email and password are invalids', async () => {
+            await expect(createHandler().handle(createCommand(NAME_TOO_SHORT, EMAIL_INVALID_FORMAT, PASSWORD_TOO_SHORT))).rejects.toThrowError(
+                BuildUserInvalidErrors(
+                    new UserNameIsNotLongEnough(NAME_TOO_SHORT),
+                    new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT),
+                    new PasswordIsNotLongEnough(PASSWORD_TOO_SHORT)
+                )
+            );
+        });
+    });
+
+    function BuildUserInvalidErrors(...errors: Error[]) {
+        return new UserInvalid(errors);
+    }
 
     function createHandler() {
         return new RegisterUserCommandHandler(repository);
@@ -67,6 +95,15 @@ describe('Register user', () => {
     }
     
 });
+
+class UserInvalid extends Error {
+    readonly errors: Array<Error>;
+
+    constructor(errors: Array<Error>) {
+        super("user is invalid");
+        this.errors = errors;
+    }
+}
 
 class EmailIsTooLong extends Error {
     constructor(email: string) {
@@ -139,7 +176,6 @@ class RegisterUserCommandHandler implements CommandHandler {
 
     async handle(command: RegisterUserCommand): Promise<void> {
         const user: User = createUserFactory(await this.repository.nextId(), command.name, command.email, command.password);
-
         await this.repository.save(user);
     }
 }
@@ -151,10 +187,17 @@ type User = {
     password: string
 }
 
+
 function createUserFactory(id: string, name: string, email: string, password: string) {
-    verifyUsername(name);
-    verifyEmail(email);
-    verifyPassword(password);
+    var errors: Array<Error> = [
+        ...verifyUsername(name),
+        ...verifyEmail(email),
+        ...verifyPassword(password)
+    ];
+
+    if (errors.length > 0) {
+        throw new UserInvalid(errors);
+    }
 
     const user: User = {
         id,
@@ -166,32 +209,44 @@ function createUserFactory(id: string, name: string, email: string, password: st
     return user;
 }
 
-function verifyPassword(password: string) {
+function verifyPassword(password: string): Array<Error> {
+    var errors: Array<Error> = [];
+
     if (password.length < 8) {
-        throw new PasswordIsNotLongEnough(password);
+        errors.push(new PasswordIsNotLongEnough(password));
     }
 
     if (password.length > 255) {
-        throw new PasswordIsTooLong(password);
+        errors.push(new PasswordIsTooLong(password));
     }
+
+    return errors;
 }
 
-function verifyEmail(email: string) {
+function verifyEmail(email: string): Array<Error> {
+    var errors: Array<Error> = [];
+
     if (!email.includes("@")) {
-        throw new EmailIsNotInAValidFormat(email);
+        errors.push(new EmailIsNotInAValidFormat(email));
     }
 
     if (email.length > 256) {
-        throw new EmailIsTooLong(email);
+        errors.push(new EmailIsTooLong(email));
     }
+
+    return errors;
 }
 
-function verifyUsername(name: string) {
+function verifyUsername(name: string): Array<Error> {
+    var errors: Array<Error> = [];
+
     if (name.length < 4) {
-        throw new UserNameIsNotLongEnough(name);
+        errors.push(new UserNameIsNotLongEnough(name));
     }
 
     if (name.length > 50) {
-        throw new UserNameIsTooLong(name);
+        errors.push(new UserNameIsTooLong(name));
     }
+
+    return errors;
 }
