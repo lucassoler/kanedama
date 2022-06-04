@@ -8,7 +8,7 @@ dotenv.config();
 
 const services = serviceLocator();
 
-getDataSource(services.environmentVariables).initialize()
+services.dataSource.initialize()
     .then(() => {
       const expressServer = new ExpressServer().create(services);
       
