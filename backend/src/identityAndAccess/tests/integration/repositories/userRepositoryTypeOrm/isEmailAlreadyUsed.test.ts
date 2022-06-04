@@ -13,7 +13,7 @@ describe('UserRepositoryTypeOrm - IsEmailAlreadyUsed', () => {
     const USER_EXISTING = {
         id: "4fa55646-2541-4c96-b51f-aa4a824c239d",
         name: "Jane Doe",
-        email: "jane.doe@gmail.com",
+        email: "jane.doe_1234@gmail.com",
         password: "Password"
     };
 

@@ -9,6 +9,7 @@ export interface EnvironmentVariables {
     readonly POSTGRES_SYNCHRONIZE_AUTO: boolean;
     readonly POSTGRES_LOGGING: boolean;
     readonly TYPEORM_ENTITIES: string;
+    readonly SALT_ROUNDS: number;
 }
 
 
@@ -23,6 +24,7 @@ export class NodeEnvironmentVariables implements EnvironmentVariables {
     readonly POSTGRES_SYNCHRONIZE_AUTO = this.getBooleanOrError("POSTGRES_SYNCHRONIZE_AUTO");
     readonly POSTGRES_LOGGING = this.getBooleanOrError("POSTGRES_LOGGING");
     readonly TYPEORM_ENTITIES = this.getStringOrError("TYPEORM_ENTITIES");
+    readonly SALT_ROUNDS = this.getNumberOrError("SALT_ROUNDS");
 
     private getStringOrError(value: string): string {
         return this.getEnvValue(value);
