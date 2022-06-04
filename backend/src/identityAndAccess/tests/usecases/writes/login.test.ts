@@ -3,10 +3,13 @@ import { CommandHandler } from "../../../../sharedKernel/commandHandler";
 import { DomainError } from "../../../../sharedKernel/domainError";
 import IdentityErrorCodes from "../../../writes/domain/errors/IdentityErrorCodes";
 import { UserRepository } from "../../../writes/domain/repositories/UserRepository";
+import { EncryptionService } from "../../../writes/domain/services/EncryptionService";
 import { UserRepositoryInMemory } from "../../../writes/driven/repositories/UserRepositoryInMemory";
+import { FakeEncryptionService } from "../../../writes/driven/services/FakeEncryptionService";
 
 describe('User login', () => {
     let repository: UserRepositoryInMemory;
+    let encryptionService: FakeEncryptionService;
     const EXISTING_USER = {
         id: "3aae7614-9009-4a13-976b-2eeb57c656d4",
         name: "Jane Doe",
@@ -16,6 +19,7 @@ describe('User login', () => {
 
     beforeEach(() => {
         repository = new UserRepositoryInMemory();
+        encryptionService = new FakeEncryptionService();
         repository.users.push(EXISTING_USER)
     });
 
@@ -30,17 +34,21 @@ describe('User login', () => {
     });
 
     describe('throws an error', () => {
-        test('if user name not found', async () => {
+        test('if login passed does not match with username and password', async () => {
             await expect(createHandler().handle(createCommand("NotExistingUsername"))).rejects.toThrowError(new InvalidLoginOrPassword());
+        });
+
+        test('if password passed does not match with encrypted password', async () => {
+            await expect(createHandler().handle(createCommand(EXISTING_USER.name, "INVALID_PASSWORD"))).rejects.toThrowError(new InvalidLoginOrPassword());
         });
     });
 
     function createHandler() {
-        return new LoginCommandHandler(repository);
+        return new LoginCommandHandler(repository, encryptionService);
     }
 
-    function createCommand(login: string = "Jane Doe") {
-        return new LoginCommand(login);
+    function createCommand(login: string = "Jane Doe", password: string = "Password") {
+        return new LoginCommand(login, password);
     }
 });
 
@@ -54,13 +62,15 @@ class InvalidLoginOrPassword extends DomainError {
 }
 
 class LoginCommand implements Command  {
-    constructor(readonly login: string) {
+    constructor(readonly login: string,
+        readonly password: string) {
         
     }
 }
 
 class LoginCommandHandler implements CommandHandler {
-    constructor(private readonly repository: UserRepository) {
+    constructor(private readonly repository: UserRepository,
+        private readonly encryptionService: EncryptionService) {
 
     }
 
@@ -68,6 +78,10 @@ class LoginCommandHandler implements CommandHandler {
         const user = await this.repository.getByUsernameOrEmail(command.login);
 
         if (user === null) throw new InvalidLoginOrPassword();
+
+        if (!await this.encryptionService.compare(user.password, command.password)) {
+            throw new InvalidLoginOrPassword();
+        }
 
         return Promise.resolve({name: user.name});
     }
