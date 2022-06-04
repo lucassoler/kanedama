@@ -42,16 +42,14 @@ describe('Register user', () => {
         createUserFactory = new CreateUserFactory(repository, encryptionService);
     });
 
-    describe('register a new user', () => {
-        test('should creates a new user', async () => {
-            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
-            verifyPersistedUser(EXPECTED_USER);
-        });
+    test('should creates a new user', async () => {
+        await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
+        verifyPersistedUser(EXPECTED_USER);
+    });
 
-        test('password should be encrypted', async () => {
-            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
-            verifyEncriptedPassword(PASSWORD_VALID);
-        });
+    test('password should be encrypted', async () => {
+        await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
+        verifyEncriptedPassword(PASSWORD_VALID);
     });
 
     describe('throws an error', () => {

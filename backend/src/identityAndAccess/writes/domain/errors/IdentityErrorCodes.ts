@@ -11,6 +11,7 @@ export default class IdentityErrorCodes {
     static readonly EmailIsNotInAValidFormat = IdentityErrorCodes.concatErrorCode("4006");
     static readonly EmailAlreadyUsed = IdentityErrorCodes.concatErrorCode("4007");
     static readonly UserNameAlreadyUsed = IdentityErrorCodes.concatErrorCode("4008");
+    static readonly InvalidLoginOrPassword = IdentityErrorCodes.concatErrorCode("4009");
 
     private static concatErrorCode(error: string) {
         return IdentityErrorCodes.IDENTITY_ERROR_CODE + error;

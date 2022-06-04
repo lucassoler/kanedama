@@ -5,6 +5,11 @@ export class UserRepositoryInMemory implements UserRepository {
     users: Array<User> = [];
     nextIdToReturn: string = "3aae7614-9009-4a13-976b-2eeb57c656d4";
 
+    getByUsernameOrEmail(login: string): Promise<User | null> {
+        const user = this.users.find(x => x.name === login || x.email === login);
+        return Promise.resolve(user ?? null);
+    }
+
     nextId(): Promise<string> {
         return Promise.resolve(this.nextIdToReturn);
     }
