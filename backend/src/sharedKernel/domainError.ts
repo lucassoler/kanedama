@@ -10,3 +10,7 @@ export abstract class DomainError extends Error {
 export abstract class DomainValidationError extends DomainError {
 
 }
+
+export abstract class DomainNotFoundError extends DomainError {
+
+}

@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import {validationResult} from "express-validator";
 import createError, { HttpError } from 'http-errors';
-import { DomainError, DomainValidationError } from "../../sharedKernel/domainError";
+import { DomainError, DomainNotFoundError, DomainValidationError } from "../../sharedKernel/domainError";
 
 export class ExpressMiddlewares {
 
@@ -40,6 +40,8 @@ export class ExpressMiddlewares {
 
             if (error instanceof DomainValidationError)
                 httpError = new createError.BadRequest(error.message);
+            else if (error instanceof DomainNotFoundError)
+                httpError = new createError.NotFound(error.message);
 
             const responseBody: CustomErrorResponse = {
                 status_code: httpError.statusCode,

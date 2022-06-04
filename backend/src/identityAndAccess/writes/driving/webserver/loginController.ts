@@ -1,6 +1,12 @@
 import { LoginCommand, LoginCommandResponse } from "../../usecases/LoginCommand";
 import {Request, Response} from 'express';
 import { Dependencies } from "../../../../configuration/services/serviceLocator";
+import { checkSchema, ValidationChain } from "express-validator";
+import { loginSchema } from "./schema/loginSchema";
+
+export const loginValidator = (): ValidationChain[] => {
+    return checkSchema(loginSchema());
+}
 
 export const loginController = (services: Dependencies) => {
     return async (request: Request, response: Response) => {

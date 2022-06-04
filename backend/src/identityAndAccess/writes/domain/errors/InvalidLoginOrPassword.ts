@@ -1,7 +1,7 @@
-import { DomainError } from "../../../../sharedKernel/domainError";
+import { DomainNotFoundError } from "../../../../sharedKernel/domainError";
 import IdentityErrorCodes from "./IdentityErrorCodes";
 
-export class InvalidLoginOrPassword extends DomainError {
+export class InvalidLoginOrPassword extends DomainNotFoundError {
     code: string = IdentityErrorCodes.InvalidLoginOrPassword;
 
     constructor() {
