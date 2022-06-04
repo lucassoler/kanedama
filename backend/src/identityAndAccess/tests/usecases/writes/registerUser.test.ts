@@ -4,6 +4,7 @@ import { CommandHandler } from "../../../../sharedKernel/commandHandler";
 describe('Register user', () => {
     const NAME_TOO_SHORT = "Jan";
     const NAME_TOO_LONG = "Lorem ipsum dolor sit amet, consectetur vestibulum.";
+    const INVALID_EMAIL = "invalidemail";
 
     let repository: UserRepositoryInMemory;
     
@@ -34,6 +35,10 @@ describe('Register user', () => {
         test('if name length is too long', async () => {
             await expect(createHandler().handle(createCommand(NAME_TOO_LONG))).rejects.toThrowError(new UserNameIsTooLong(NAME_TOO_LONG));
         });
+
+        test('if email has is not valid', async () => {
+            await expect(createHandler().handle(createCommand("Jane Doe", INVALID_EMAIL))).rejects.toThrowError(new EmailIsNotInAValidFormat(INVALID_EMAIL));
+        });
     });
 
     function createHandler() {
@@ -46,15 +51,22 @@ describe('Register user', () => {
     
 });
 
+class EmailIsNotInAValidFormat extends Error {
+
+    constructor(email: string) {
+        super(`email "${email}" is not a valid email format`);
+    }
+}
+
 class UserNameIsNotLongEnough extends Error {
     constructor(name: string) {
-        super(`user ${name} name is not long enough`);
+        super(`username "${name}" is not long enough`);
     }
 }
 
 class UserNameIsTooLong extends Error {
     constructor(name: string) {
-        super(`user ${name} name is too long`);
+        super(`username "${name}" is too long`);
     }
 }
 
@@ -111,6 +123,10 @@ function createUserFactory(id: string, name: string, email: string, password: st
 
     if (name.length > 50) {
         throw new UserNameIsTooLong(name);
+    }
+
+    if (!email.includes("@")) {
+        throw new EmailIsNotInAValidFormat(email);
     }
 
     const user: User = {
