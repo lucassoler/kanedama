@@ -2,10 +2,14 @@ import { Command } from "../../../../sharedKernel/command";
 import { CommandHandler } from "../../../../sharedKernel/commandHandler";
 
 describe('Register user', () => {
+    const NAME_VALID = "Jane Doe";
     const NAME_TOO_SHORT = "Jan";
     const NAME_TOO_LONG = "Lorem ipsum dolor sit amet, consectetur vestibulum.";
+    const EMAIL_VALID = "jane.doe@gmail.com";
     const EMAIL_INVALID_FORMAT = "invalidemail";
     const EMAIL_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqd@hdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
+    const PASSWORD_TOO_SHORT = "Pass";
+    const PASSWORD_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqdhdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
 
     let repository: UserRepositoryInMemory;
     
@@ -17,12 +21,12 @@ describe('Register user', () => {
         test('should creates a new user', async () => {
             const expectedUser = { 
                 id: "3aae7614-9009-4a13-976b-2eeb57c656d4", 
-                name: "Jane Doe",
-                email: "jane.doe@gmail.com", 
+                name: NAME_VALID,
+                email: EMAIL_VALID, 
                 password: "password" 
             };
 
-            await createHandler().handle(createCommand("Jane Doe",  "jane.doe@gmail.com", "password"));
+            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, "password"));
             expect(repository.users.length).toBe(1);
             expect(repository.users[0]).toStrictEqual(expectedUser);
         });
@@ -38,11 +42,19 @@ describe('Register user', () => {
         });
 
         test('if email is not valid', async () => {
-            await expect(createHandler().handle(createCommand("Jane Doe", EMAIL_INVALID_FORMAT))).rejects.toThrowError(new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_INVALID_FORMAT))).rejects.toThrowError(new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT));
         });
 
         test('if email is too long', async () => {
-            await expect(createHandler().handle(createCommand("Jane Doe", EMAIL_TOO_LONG))).rejects.toThrowError(new EmailIsTooLong(EMAIL_TOO_LONG));
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_TOO_LONG))).rejects.toThrowError(new EmailIsTooLong(EMAIL_TOO_LONG));
+        });
+
+        test('if password length is not long enough', async () => {
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_SHORT))).rejects.toThrowError(new PasswordIsNotLongEnough(PASSWORD_TOO_SHORT));
+        });
+
+        test('if password length is too long', async () => {
+            await expect(createHandler().handle(createCommand(NAME_VALID, EMAIL_VALID, PASSWORD_TOO_LONG))).rejects.toThrowError(new PasswordIsTooLong(PASSWORD_TOO_LONG));
         });
     });
 
@@ -50,7 +62,7 @@ describe('Register user', () => {
         return new RegisterUserCommandHandler(repository);
     }
     
-    function createCommand(name: string, email: string = "jane.doe@gmail.com", password: string = "password") {
+    function createCommand(name: string = NAME_VALID, email: string = EMAIL_VALID, password: string = "password") {
         return new RegisterUserCommand(name, email, password);
     }
     
@@ -78,6 +90,18 @@ class UserNameIsNotLongEnough extends Error {
 class UserNameIsTooLong extends Error {
     constructor(name: string) {
         super(`username "${name}" is too long`);
+    }
+}
+
+class PasswordIsNotLongEnough extends Error {
+    constructor(name: string) {
+        super(`password "${name}" is not long enough`);
+    }
+}
+
+class PasswordIsTooLong extends Error {
+    constructor(name: string) {
+        super(`password "${name}" is too long`);
     }
 }
 
@@ -144,11 +168,20 @@ function createUserFactory(id: string, name: string, email: string, password: st
         throw new EmailIsTooLong(email);
     }
 
+    if (password.length < 8) {
+        throw new PasswordIsNotLongEnough(password);
+    }
+
+    if (password.length > 255) {
+        throw new PasswordIsTooLong(password);
+    }
+
     const user: User = {
         id,
         name,
         email,
         password
     };
+
     return user;
 }
