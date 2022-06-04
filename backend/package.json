@@ -7,8 +7,10 @@
     "test:integration": "NODE_ENV=test jest --watchAll --testPathPattern=\".*/integration/.*.test.ts\""
   },
   "jest": {
+    "globalSetup": "<rootDir>/src/configuration/tests/jest.setup.js",
     "modulePathIgnorePatterns": [
-      "<rootDir>/node_modules"
+      "<rootDir>/node_modules",
+      "<rootDit</dist"
     ],
     "transform": {
       "\\.(ts)$": "ts-jest"
