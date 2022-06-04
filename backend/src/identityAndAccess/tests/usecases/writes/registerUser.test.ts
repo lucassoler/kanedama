@@ -73,7 +73,7 @@ describe('Register user', () => {
             );
         });
 
-        /*test('if a user already registered with this email', async () => {
+        test('if a user already registered with this email', async () => {
             repository.save({ 
                 id: "01a1b5be-7708-4396-ad32-053e0c473f2e", 
                 name: "John Doe",
@@ -85,7 +85,7 @@ describe('Register user', () => {
                 BuildUserInvalidErrors(new EmailAlreadyUsed("doe.family@gmail.com"))
             );
             
-        });*/
+        });
     });
 
     describe('throws multiple errors', () => {
@@ -199,6 +199,7 @@ class IdentityErrorCodes {
 }
 
 interface UserRepository {
+    isEmailAlreadyUsed(email: string): Promise<boolean>;
     nextId(): Promise<string>;
     save(user: User): Promise<void>;
 }
@@ -209,6 +210,14 @@ class UserRepositoryInMemory implements UserRepository {
 
     nextId(): Promise<string> {
         return Promise.resolve(this.nextIdToReturn);
+    }
+
+    isEmailAlreadyUsed(email: string): Promise<boolean> {
+        if (this.users.find(x => x.email === email)) {
+            return Promise.resolve(true);
+        }
+
+        return Promise.resolve(false);
     }
 
     async save(user: User): Promise<void> {
@@ -252,7 +261,7 @@ class CreateUserFactory {
     async create(name: string, email: string, password: string): Promise<User> {
         var errors: Array<DomainError> = [
             ...this.verifyUsername(name),
-            ...this.verifyEmail(email),
+            ...await this.verifyEmail(email),
             ...this.verifyPassword(password)
         ];
     
@@ -286,7 +295,7 @@ class CreateUserFactory {
         return errors;
     }
     
-    verifyEmail(email: string): Array<DomainError> {
+    async verifyEmail(email: string): Promise<Array<DomainError>> {
         var errors: Array<DomainError> = [];
     
         if (!email.includes("@")) {
@@ -295,6 +304,10 @@ class CreateUserFactory {
     
         if (email.length > 256) {
             errors.push(new EmailIsTooLong(email));
+        }
+
+        if (await this.repository.isEmailAlreadyUsed(email)) {
+            errors.push(new EmailAlreadyUsed(email));
         }
     
         return errors;
