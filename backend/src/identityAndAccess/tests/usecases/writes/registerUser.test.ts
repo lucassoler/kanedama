@@ -2,6 +2,9 @@ import { Command } from "../../../../sharedKernel/command";
 import { CommandHandler } from "../../../../sharedKernel/commandHandler";
 
 describe('Register user', () => {
+    const NAME_TOO_SHORT = "Jan";
+    const NAME_TOO_LONG = "Lorem ipsum dolor sit amet, consectetur vestibulum.";
+
     let repository: UserRepositoryInMemory;
     
     beforeEach(() => {
@@ -25,11 +28,11 @@ describe('Register user', () => {
 
     describe('throws an error', () => {
         test('if name length is not long enough', async () => {
-            await expect(createHandler().handle(createCommand("Jan"))).rejects.toThrowError(new InvalidUserNameError());
+            await expect(createHandler().handle(createCommand(NAME_TOO_SHORT))).rejects.toThrowError(new UserNameIsNotLongEnough(NAME_TOO_SHORT));
         });
 
         test('if name length is too long', async () => {
-            await expect(createHandler().handle(createCommand("Lorem ipsum dolor sit amet, consectetur vestibulum."))).rejects.toThrowError(new InvalidUserNameError());
+            await expect(createHandler().handle(createCommand(NAME_TOO_LONG))).rejects.toThrowError(new UserNameIsTooLong(NAME_TOO_LONG));
         });
     });
 
@@ -43,8 +46,16 @@ describe('Register user', () => {
     
 });
 
-class InvalidUserNameError extends Error {
+class UserNameIsNotLongEnough extends Error {
+    constructor(name: string) {
+        super(`user ${name} name is not long enough`);
+    }
+}
 
+class UserNameIsTooLong extends Error {
+    constructor(name: string) {
+        super(`user ${name} name is too long`);
+    }
 }
 
 interface UserRepository {
@@ -80,18 +91,8 @@ class RegisterUserCommandHandler implements CommandHandler {
     }
 
     async handle(command: RegisterUserCommand): Promise<void> {
-        if (command.name.length < 4) {
-            throw new InvalidUserNameError();
-        }
-        if (command.name.length > 50) {
-            throw new InvalidUserNameError();
-        }
-        const user: User = { 
-            id: await this.repository.nextId(),
-            name: command.name,
-            email: command.email,
-            password: command.password 
-        };
+        const user: User = createUserFactory(await this.repository.nextId(), command.name, command.email, command.password);
+
         await this.repository.save(user);
     }
 }
@@ -101,4 +102,22 @@ type User = {
     name: string,
     email: string, 
     password: string
+}
+
+function createUserFactory(id: string, name: string, email: string, password: string) {
+    if (name.length < 4) {
+        throw new UserNameIsNotLongEnough(name);
+    }
+
+    if (name.length > 50) {
+        throw new UserNameIsTooLong(name);
+    }
+
+    const user: User = {
+        id,
+        name,
+        email,
+        password
+    };
+    return user;
 }
