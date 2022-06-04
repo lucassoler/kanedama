@@ -2,6 +2,7 @@ import { DataSource } from "typeorm";
 import { NodeEnvironmentVariables } from "../../../../../configuration/environment/environmentVariables";
 import { getDataSource } from "../../../../../configuration/typeorm/connection";
 import { UserEntity } from "../../../../../configuration/typeorm/entities/UserEntity";
+import { User } from "../../../../writes/domain/User";
 import { UserRepositoryTypeOrm } from "../../../../writes/driven/repositories/UserRepositoryTypeOrm";
 import { FakeUuidGenerator } from "../../../../writes/driven/services/FakeUuidGenerator";
 
@@ -46,12 +47,12 @@ describe('UserRepositoryTypeOrm - Save', () => {
     });
 });
 
-function verifyPersistedUser(persistedUser: UserEntity | null, USER_TO_PERSIST: { id: string; name: string; email: string; password: string; }) {
+function verifyPersistedUser(persistedUser: UserEntity | null, expectedUser: User) {
     expect(persistedUser).not.toBeNull();
-    expect(persistedUser!.id).toStrictEqual(USER_TO_PERSIST.id);
-    expect(persistedUser!.name).toStrictEqual(USER_TO_PERSIST.name);
-    expect(persistedUser!.email).toStrictEqual(USER_TO_PERSIST.email);
-    expect(persistedUser!.password).toStrictEqual(USER_TO_PERSIST.password);
+    expect(persistedUser!.id).toStrictEqual(expectedUser.id);
+    expect(persistedUser!.name).toStrictEqual(expectedUser.name);
+    expect(persistedUser!.email).toStrictEqual(expectedUser.email);
+    expect(persistedUser!.password).toStrictEqual(expectedUser.password);
 }
 
 async function retrievePersistedUser(dataSource: DataSource, userId: string) {
