@@ -25,6 +25,8 @@ import { router } from './expressRouter';
         server.use(bodyParser.json());
         server.use(bodyParser.urlencoded({extended: true}));
 
+        server.use(ExpressMiddlewares.preErrorHandling());
+
         server.use('/api', router(services));
 
         return server;
