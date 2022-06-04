@@ -30,8 +30,9 @@ export class UserRepositoryTypeOrm implements UserRepository {
         return Promise.resolve();
     }
 
-    isUsernameAlreadyUsed(name: string): Promise<boolean> {
-        throw new Error("Method not implemented.");
+    async isUsernameAlreadyUsed(name: string): Promise<boolean> {
+        const existingUser = await this.typeOrmDataSource.getRepository(UserEntity).createQueryBuilder("user").where("user.name = :name", { name: name }).getOne();
+        return existingUser !== null;
     }
 
     isEmailAlreadyUsed(email: string): Promise<boolean> {
