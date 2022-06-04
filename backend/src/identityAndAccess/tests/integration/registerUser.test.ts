@@ -13,14 +13,28 @@ describe('REST - Register User', () => {
     });
 
     test('register user succeed', async () => {
-        const res = await request(server.get()).post('/api/identity/register').send({name: "Jane Doe", email: "jane.doe@gmail.com", password: "Password"});
+        const res = await request(server.get())
+            .post('/api/identity/register')
+            .send({
+                name: "Jane Doe", 
+                email: "jane.doe@gmail.com", 
+                password: "Password"
+            });
+
         expect(res.status).toBe(200);
         expect(res.body).toStrictEqual({});
         expect(spy).toHaveBeenCalledWith(new RegisterUserCommand("Jane Doe", "jane.doe@gmail.com", "Password"));
     });
 
     test('register user failed with invalid parameters', async () => {
-        const res = await request(server.get()).post('/api/identity/register').send({name: 1234, email: 12345, password: 123456});
+        const res = await request(server.get())
+            .post('/api/identity/register')
+            .send({
+                name: 1234, 
+                email: 12345, 
+                password: 123456
+            });
+
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("BadRequest");
         expect(res.body.errors).toStrictEqual([
@@ -38,7 +52,10 @@ describe('REST - Register User', () => {
     });
 
     test('register user failed with missing parameters', async () => {
-        const res = await request(server.get()).post('/api/identity/register').send();
+        const res = await request(server.get())
+            .post('/api/identity/register')
+            .send();
+            
         expect(res.status).toBe(400);
         expect(res.body.error).toBe("BadRequest");
         expect(res.body.errors).toStrictEqual([
