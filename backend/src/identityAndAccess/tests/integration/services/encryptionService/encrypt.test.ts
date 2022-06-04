@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { NodeEnvironmentVariables } from "../../../../../configuration/environment/environmentVariables";
 import { BcryptEncryptionService } from "../../../../writes/driven/services/BcryptEncryptionService";
 

@@ -1,5 +1,5 @@
 import { EncryptionService } from "../../domain/services/EncryptionService";
-import bcrypt from 'bcrypt';
+import bcrypt from 'bcryptjs';
 import { EnvironmentVariables } from "../../../../configuration/environment/environmentVariables";
 
 export class BcryptEncryptionService implements EncryptionService {
