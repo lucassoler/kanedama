@@ -1,11 +1,8 @@
-import { Command } from "../../../../sharedKernel/command";
-import { CommandHandler } from "../../../../sharedKernel/commandHandler";
-import { DomainError } from "../../../../sharedKernel/domainError";
-import IdentityErrorCodes from "../../../writes/domain/errors/IdentityErrorCodes";
-import { UserRepository } from "../../../writes/domain/repositories/UserRepository";
-import { EncryptionService } from "../../../writes/domain/services/EncryptionService";
 import { UserRepositoryInMemory } from "../../../writes/driven/repositories/UserRepositoryInMemory";
 import { FakeEncryptionService } from "../../../writes/driven/services/FakeEncryptionService";
+import { InvalidLoginOrPassword } from "../../../writes/domain/errors/InvalidLoginOrPassword";
+import { LoginCommand } from "../../../writes/usecases/LoginCommand";
+import { LoginCommandHandler } from "../../../writes/usecases/LoginCommandHandler";
 
 describe('User login', () => {
     let repository: UserRepositoryInMemory;
@@ -25,12 +22,12 @@ describe('User login', () => {
 
     test('should succeed with an valid name and password', async () => {
         const username = await createHandler().handle(createCommand());
-        expect(username).toStrictEqual({name: "Jane Doe"});
+        expect(username).toStrictEqual({name: EXISTING_USER.name});
     });
 
     test('should succeed with an valid email and password', async () => {
         const username = await createHandler().handle(createCommand("jane.doe@gmail.com"));
-        expect(username).toStrictEqual({name: "Jane Doe"});
+        expect(username).toStrictEqual({name: EXISTING_USER.name});
     });
 
     describe('throws an error', () => {
@@ -47,46 +44,7 @@ describe('User login', () => {
         return new LoginCommandHandler(repository, encryptionService);
     }
 
-    function createCommand(login: string = "Jane Doe", password: string = "Password") {
+    function createCommand(login: string = EXISTING_USER.name, password: string = "Password") {
         return new LoginCommand(login, password);
     }
 });
-
-class InvalidLoginOrPassword extends DomainError {
-    code: string = IdentityErrorCodes.InvalidLoginOrPassword;
-
-    constructor() {
-        super("invalid login or password");
-    }
-
-}
-
-class LoginCommand implements Command  {
-    constructor(readonly login: string,
-        readonly password: string) {
-        
-    }
-}
-
-class LoginCommandHandler implements CommandHandler {
-    constructor(private readonly repository: UserRepository,
-        private readonly encryptionService: EncryptionService) {
-
-    }
-
-    async handle(command: LoginCommand): Promise<LoginCommandResponse> {
-        const user = await this.repository.getByUsernameOrEmail(command.login);
-
-        if (user === null) throw new InvalidLoginOrPassword();
-
-        if (!await this.encryptionService.compare(user.password, command.password)) {
-            throw new InvalidLoginOrPassword();
-        }
-
-        return Promise.resolve({name: user.name});
-    }
-}
-
-type LoginCommandResponse = {
-    name: string
-}
