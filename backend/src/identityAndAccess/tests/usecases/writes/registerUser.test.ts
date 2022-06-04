@@ -4,7 +4,8 @@ import { CommandHandler } from "../../../../sharedKernel/commandHandler";
 describe('Register user', () => {
     const NAME_TOO_SHORT = "Jan";
     const NAME_TOO_LONG = "Lorem ipsum dolor sit amet, consectetur vestibulum.";
-    const INVALID_EMAIL = "invalidemail";
+    const EMAIL_INVALID_FORMAT = "invalidemail";
+    const EMAIL_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqd@hdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
 
     let repository: UserRepositoryInMemory;
     
@@ -36,8 +37,12 @@ describe('Register user', () => {
             await expect(createHandler().handle(createCommand(NAME_TOO_LONG))).rejects.toThrowError(new UserNameIsTooLong(NAME_TOO_LONG));
         });
 
-        test('if email has is not valid', async () => {
-            await expect(createHandler().handle(createCommand("Jane Doe", INVALID_EMAIL))).rejects.toThrowError(new EmailIsNotInAValidFormat(INVALID_EMAIL));
+        test('if email is not valid', async () => {
+            await expect(createHandler().handle(createCommand("Jane Doe", EMAIL_INVALID_FORMAT))).rejects.toThrowError(new EmailIsNotInAValidFormat(EMAIL_INVALID_FORMAT));
+        });
+
+        test('if email is too long', async () => {
+            await expect(createHandler().handle(createCommand("Jane Doe", EMAIL_TOO_LONG))).rejects.toThrowError(new EmailIsTooLong(EMAIL_TOO_LONG));
         });
     });
 
@@ -50,6 +55,12 @@ describe('Register user', () => {
     }
     
 });
+
+class EmailIsTooLong extends Error {
+    constructor(email: string) {
+        super(`email "${email}" is too long`);
+    }
+}
 
 class EmailIsNotInAValidFormat extends Error {
 
@@ -127,6 +138,10 @@ function createUserFactory(id: string, name: string, email: string, password: st
 
     if (!email.includes("@")) {
         throw new EmailIsNotInAValidFormat(email);
+    }
+
+    if (email.length > 256) {
+        throw new EmailIsTooLong(email);
     }
 
     const user: User = {
