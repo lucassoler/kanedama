@@ -9,13 +9,16 @@ describe('Register user', () => {
     const EMAIL_VALID = "jane.doe@gmail.com";
     const EMAIL_INVALID_FORMAT = "invalidemail";
     const EMAIL_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqd@hdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
+    const PASSWORD_VALID = "Password";
     const PASSWORD_TOO_SHORT = "Pass";
     const PASSWORD_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqdhdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
 
     let repository: UserRepositoryInMemory;
+    let createUserFactory: CreateUserFactory;
     
     beforeEach(() => {
         repository = new UserRepositoryInMemory();
+        createUserFactory = new CreateUserFactory(repository);
     });
 
     describe('register a new user', () => {
@@ -24,10 +27,10 @@ describe('Register user', () => {
                 id: "3aae7614-9009-4a13-976b-2eeb57c656d4", 
                 name: NAME_VALID,
                 email: EMAIL_VALID, 
-                password: "password" 
+                password:PASSWORD_VALID 
             };
 
-            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, "password"));
+            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
             expect(repository.users.length).toBe(1);
             expect(repository.users[0]).toStrictEqual(expectedUser);
         });
@@ -69,6 +72,20 @@ describe('Register user', () => {
                 BuildUserInvalidErrors(new PasswordIsTooLong(PASSWORD_TOO_LONG))
             );
         });
+
+        /*test('if a user already registered with this email', async () => {
+            repository.save({ 
+                id: "01a1b5be-7708-4396-ad32-053e0c473f2e", 
+                name: "John Doe",
+                email: "doe.family@gmail.com", 
+                password: PASSWORD_VALID 
+            });
+
+            await expect(createHandler().handle(createCommand(NAME_VALID,  "doe.family@gmail.com", PASSWORD_VALID))).rejects.toThrowError(
+                BuildUserInvalidErrors(new EmailAlreadyUsed("doe.family@gmail.com"))
+            );
+            
+        });*/
     });
 
     describe('throws multiple errors', () => {
@@ -88,14 +105,23 @@ describe('Register user', () => {
     }
 
     function createHandler() {
-        return new RegisterUserCommandHandler(repository);
+        return new RegisterUserCommandHandler(repository, createUserFactory);
     }
     
-    function createCommand(name: string = NAME_VALID, email: string = EMAIL_VALID, password: string = "password") {
+    function createCommand(name: string = NAME_VALID, email: string = EMAIL_VALID, password: string = PASSWORD_VALID) {
         return new RegisterUserCommand(name, email, password);
     }
     
 });
+
+class EmailAlreadyUsed extends DomainError {
+    readonly code = IdentityErrorCodes.EmailAlreadyUsed;
+
+    constructor(email: string) {
+        super(`email "${email}" is already used by another registered user`);
+    }
+
+}
 
 class UserInvalid extends DomainError {
     readonly errors: Array<DomainError>;
@@ -165,6 +191,7 @@ class IdentityErrorCodes {
     static readonly PasswordIsTooLong = IdentityErrorCodes.concatErrorCode("4004");
     static readonly EmailIsTooLong = IdentityErrorCodes.concatErrorCode("4005");
     static readonly EmailIsNotInAValidFormat = IdentityErrorCodes.concatErrorCode("4006");
+    static readonly EmailAlreadyUsed = IdentityErrorCodes.concatErrorCode("4007");
 
     private static concatErrorCode(error: string) {
         return IdentityErrorCodes.IDENTITY_ERROR_CODE + error;
@@ -199,12 +226,13 @@ class RegisterUserCommand implements Command {
 }
 
 class RegisterUserCommandHandler implements CommandHandler {
-    constructor(private repository : UserRepository) {
+    constructor(private repository : UserRepository,
+        private createUserFactory: CreateUserFactory) {
 
     }
 
     async handle(command: RegisterUserCommand): Promise<void> {
-        const user: User = createUserFactory(await this.repository.nextId(), command.name, command.email, command.password);
+        const user: User = await this.createUserFactory.create(command.name, command.email, command.password);
         await this.repository.save(user);
     }
 }
@@ -216,66 +244,73 @@ type User = {
     password: string
 }
 
+class CreateUserFactory {
+    constructor(private repository : UserRepository) {
 
-function createUserFactory(id: string, name: string, email: string, password: string) {
-    var errors: Array<DomainError> = [
-        ...verifyUsername(name),
-        ...verifyEmail(email),
-        ...verifyPassword(password)
-    ];
-
-    if (errors.length > 0) {
-        throw new UserInvalid(errors);
     }
 
-    const user: User = {
-        id,
-        name,
-        email,
-        password
-    };
+    async create(name: string, email: string, password: string): Promise<User> {
+        var errors: Array<DomainError> = [
+            ...this.verifyUsername(name),
+            ...this.verifyEmail(email),
+            ...this.verifyPassword(password)
+        ];
+    
+        if (errors.length > 0) {
+            throw new UserInvalid(errors);
+        }
 
-    return user;
-}
-
-function verifyPassword(password: string): Array<DomainError> {
-    var errors: Array<DomainError> = [];
-
-    if (password.length < 8) {
-        errors.push(new PasswordIsNotLongEnough(password));
+        const id = await this.repository.nextId();
+    
+        const user: User = {
+            id,
+            name,
+            email,
+            password
+        };
+    
+        return user;
     }
 
-    if (password.length > 255) {
-        errors.push(new PasswordIsTooLong(password));
+    verifyPassword(password: string): Array<DomainError> {
+        var errors: Array<DomainError> = [];
+    
+        if (password.length < 8) {
+            errors.push(new PasswordIsNotLongEnough(password));
+        }
+    
+        if (password.length > 255) {
+            errors.push(new PasswordIsTooLong(password));
+        }
+    
+        return errors;
     }
-
-    return errors;
-}
-
-function verifyEmail(email: string): Array<DomainError> {
-    var errors: Array<DomainError> = [];
-
-    if (!email.includes("@")) {
-        errors.push(new EmailIsNotInAValidFormat(email));
+    
+    verifyEmail(email: string): Array<DomainError> {
+        var errors: Array<DomainError> = [];
+    
+        if (!email.includes("@")) {
+            errors.push(new EmailIsNotInAValidFormat(email));
+        }
+    
+        if (email.length > 256) {
+            errors.push(new EmailIsTooLong(email));
+        }
+    
+        return errors;
     }
-
-    if (email.length > 256) {
-        errors.push(new EmailIsTooLong(email));
+    
+    verifyUsername(name: string): Array<DomainError> {
+        var errors: Array<DomainError> = [];
+    
+        if (name.length < 4) {
+            errors.push(new UserNameIsNotLongEnough(name));
+        }
+    
+        if (name.length > 50) {
+            errors.push(new UserNameIsTooLong(name));
+        }
+    
+        return errors;
     }
-
-    return errors;
-}
-
-function verifyUsername(name: string): Array<DomainError> {
-    var errors: Array<DomainError> = [];
-
-    if (name.length < 4) {
-        errors.push(new UserNameIsNotLongEnough(name));
-    }
-
-    if (name.length > 50) {
-        errors.push(new UserNameIsTooLong(name));
-    }
-
-    return errors;
 }
