@@ -4,7 +4,8 @@
     "start": "NODE_ENV=local npm run build && NODE_ENV=local node ./dist/configuration/startup",
     "build:watch": "tsc --build -w ./tsconfig.json",
     "start:node": "nodemon ./dist/index.js",
-    "test:integration": "NODE_ENV=test jest --watchAll --testPathPattern=\".*/integration/.*.test.ts\""
+    "test:integration": "NODE_ENV=test jest --watchAll --testPathPattern=\".*/integration/.*.test.ts\"",
+    "test:watch": "NODE_ENV=test jest --watchAll --testPathPattern=\".*/usecases/.*.test.ts\""
   },
   "jest": {
     "globalSetup": "<rootDir>/src/configuration/tests/jest.setup.js",

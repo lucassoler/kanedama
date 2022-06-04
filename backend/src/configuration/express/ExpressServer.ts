@@ -2,9 +2,9 @@ import express, {Express} from 'express';
 import helmet from 'helmet';
 import bodyParser from 'body-parser';
 import cors from 'cors';
-import { ExpressMiddlewares } from './ExpressMiddlewares';
-import { router } from './ExpressRouter';
 import { Dependencies } from '../services/serviceLocator';
+import { ExpressMiddlewares } from './expressMiddlewares';
+import { router } from './expressRouter';
 
   export class ExpressServer {
     constructor() {
