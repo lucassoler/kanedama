@@ -12,27 +12,32 @@ describe('Register user', () => {
     const PASSWORD_VALID = "Password";
     const PASSWORD_TOO_SHORT = "Pass";
     const PASSWORD_TOO_LONG = "lzsepenhakfmagspsgswxozgldvagpeyfmxgisechnvsnjnuatxglcuelqdhdaqxzufghftauzavuisurphtvzlpxtixmrlducgvknxrphfzwirrnheptsvfwgaszuvunuinvxtwdcbuhjnieiboihxaydgkwqqvmqrraotyydcmvgghgemuzwtftmjmopjmiuhnzxydjnodwfjhvevhuanvxetzlbdorkjjzdafotdvpgdabaakolffouzqjwjkk";
+    const EXPECTED_USER = {
+        id: "3aae7614-9009-4a13-976b-2eeb57c656d4",
+        name: NAME_VALID,
+        email: EMAIL_VALID,
+        password: PASSWORD_VALID
+    };
 
     let repository: UserRepositoryInMemory;
     let createUserFactory: CreateUserFactory;
+    let encryptionService: FakeEncryptionService;
     
     beforeEach(() => {
         repository = new UserRepositoryInMemory();
-        createUserFactory = new CreateUserFactory(repository);
+        encryptionService = new FakeEncryptionService();
+        createUserFactory = new CreateUserFactory(repository, encryptionService);
     });
 
     describe('register a new user', () => {
         test('should creates a new user', async () => {
-            const expectedUser = { 
-                id: "3aae7614-9009-4a13-976b-2eeb57c656d4", 
-                name: NAME_VALID,
-                email: EMAIL_VALID, 
-                password:PASSWORD_VALID 
-            };
-
             await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
-            expect(repository.users.length).toBe(1);
-            expect(repository.users[0]).toStrictEqual(expectedUser);
+            verifyPersistedUser(EXPECTED_USER);
+        });
+
+        test('password should be encrypted', async () => {
+            await createHandler().handle(createCommand(NAME_VALID,  EMAIL_VALID, PASSWORD_VALID));
+            verifyEncriptedPassword(PASSWORD_VALID);
         });
     });
 
@@ -112,6 +117,17 @@ describe('Register user', () => {
             );
         });
     });
+
+    function verifyEncriptedPassword(passwordToBeEncrypted: string) {
+        expect(repository.users[0].password).toBe(`${passwordToBeEncrypted}_ENCRYPTED`);
+    }
+
+    function verifyPersistedUser(expectedUser: User) {
+        expect(repository.users.length).toBe(1);
+        expect(repository.users[0].id).toBe(expectedUser.id);
+        expect(repository.users[0].name).toBe(expectedUser.name);
+        expect(repository.users[0].email).toBe(expectedUser.email);
+    }
 
     function BuildUserInvalidErrors(...errors: DomainError[]) {
         return new UserInvalid(errors);
@@ -252,9 +268,19 @@ class UserRepositoryInMemory implements UserRepository {
         return Promise.resolve(false);
     }
 
-    async save(user: User): Promise<void> {
+    save(user: User): Promise<void> {
         this.users.push(user);
         return Promise.resolve();
+    }
+}
+
+interface EncryptionService {
+    encrypt(password: string): Promise<string>;
+}
+
+class FakeEncryptionService implements EncryptionService {
+    encrypt(password: string): Promise<string> {
+        return Promise.resolve(`${password}_ENCRYPTED`);
     }
 }
 
@@ -267,8 +293,8 @@ class RegisterUserCommand implements Command {
 }
 
 class RegisterUserCommandHandler implements CommandHandler {
-    constructor(private repository : UserRepository,
-        private createUserFactory: CreateUserFactory) {
+    constructor(private readonly repository : UserRepository,
+        private readonly createUserFactory: CreateUserFactory) {
 
     }
 
@@ -286,7 +312,8 @@ type User = {
 }
 
 class CreateUserFactory {
-    constructor(private repository : UserRepository) {
+    constructor(private readonly repository : UserRepository,
+        private readonly encryptionService: EncryptionService) {
 
     }
 
@@ -302,12 +329,13 @@ class CreateUserFactory {
         }
 
         const id = await this.repository.nextId();
+        const encryptedPassword = await this.encryptionService.encrypt(password);
     
         const user: User = {
             id,
             name,
             email,
-            password
+            password: encryptedPassword
         };
     
         return user;
