@@ -1,5 +1,6 @@
 import { Command } from "../../../../sharedKernel/command";
 import { CommandHandler } from "../../../../sharedKernel/commandHandler";
+import { DomainError } from "../../../../sharedKernel/domainError";
 
 describe('Register user', () => {
     const NAME_VALID = "Jane Doe";
@@ -82,7 +83,7 @@ describe('Register user', () => {
         });
     });
 
-    function BuildUserInvalidErrors(...errors: Error[]) {
+    function BuildUserInvalidErrors(...errors: DomainError[]) {
         return new UserInvalid(errors);
     }
 
@@ -96,47 +97,47 @@ describe('Register user', () => {
     
 });
 
-class UserInvalid extends Error {
-    readonly errors: Array<Error>;
+class UserInvalid extends DomainError {
+    readonly errors: Array<DomainError>;
 
-    constructor(errors: Array<Error>) {
+    constructor(errors: Array<DomainError>) {
         super("user is invalid");
         this.errors = errors;
     }
 }
 
-class EmailIsTooLong extends Error {
+class EmailIsTooLong extends DomainError {
     constructor(email: string) {
         super(`email "${email}" is too long`);
     }
 }
 
-class EmailIsNotInAValidFormat extends Error {
+class EmailIsNotInAValidFormat extends DomainError {
 
     constructor(email: string) {
         super(`email "${email}" is not a valid email format`);
     }
 }
 
-class UserNameIsNotLongEnough extends Error {
+class UserNameIsNotLongEnough extends DomainError {
     constructor(name: string) {
         super(`username "${name}" is not long enough`);
     }
 }
 
-class UserNameIsTooLong extends Error {
+class UserNameIsTooLong extends DomainError {
     constructor(name: string) {
         super(`username "${name}" is too long`);
     }
 }
 
-class PasswordIsNotLongEnough extends Error {
+class PasswordIsNotLongEnough extends DomainError {
     constructor(name: string) {
         super(`password "${name}" is not long enough`);
     }
 }
 
-class PasswordIsTooLong extends Error {
+class PasswordIsTooLong extends DomainError {
     constructor(name: string) {
         super(`password "${name}" is too long`);
     }
@@ -189,7 +190,7 @@ type User = {
 
 
 function createUserFactory(id: string, name: string, email: string, password: string) {
-    var errors: Array<Error> = [
+    var errors: Array<DomainError> = [
         ...verifyUsername(name),
         ...verifyEmail(email),
         ...verifyPassword(password)
@@ -209,8 +210,8 @@ function createUserFactory(id: string, name: string, email: string, password: st
     return user;
 }
 
-function verifyPassword(password: string): Array<Error> {
-    var errors: Array<Error> = [];
+function verifyPassword(password: string): Array<DomainError> {
+    var errors: Array<DomainError> = [];
 
     if (password.length < 8) {
         errors.push(new PasswordIsNotLongEnough(password));
@@ -223,8 +224,8 @@ function verifyPassword(password: string): Array<Error> {
     return errors;
 }
 
-function verifyEmail(email: string): Array<Error> {
-    var errors: Array<Error> = [];
+function verifyEmail(email: string): Array<DomainError> {
+    var errors: Array<DomainError> = [];
 
     if (!email.includes("@")) {
         errors.push(new EmailIsNotInAValidFormat(email));
@@ -237,8 +238,8 @@ function verifyEmail(email: string): Array<Error> {
     return errors;
 }
 
-function verifyUsername(name: string): Array<Error> {
-    var errors: Array<Error> = [];
+function verifyUsername(name: string): Array<DomainError> {
+    var errors: Array<DomainError> = [];
 
     if (name.length < 4) {
         errors.push(new UserNameIsNotLongEnough(name));
