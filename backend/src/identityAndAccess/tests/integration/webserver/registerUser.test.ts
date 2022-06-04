@@ -1,10 +1,10 @@
 import request from 'supertest';
-import { ExpressServerHelper } from '../../../tests/integration/helpers/expressServerHelper';
-import { PasswordIsNotLongEnough } from '../../writes/domain/errors/PasswordIsNotLongEnough';
-import { UserInvalid } from '../../writes/domain/errors/UserInvalid';
-import { UserNameAlreadyUsed } from '../../writes/domain/errors/UserNameAlreadyUsed';
-import { RegisterUserCommand } from '../../writes/usecases/RegisterUserCommand';
-import { RegisterUserCommandHandler } from '../../writes/usecases/RegisterUserCommandHandler';
+import { ExpressServerHelper } from '../../../../tests/integration/helpers/expressServerHelper';
+import { PasswordIsNotLongEnough } from '../../../writes/domain/errors/PasswordIsNotLongEnough';
+import { UserInvalid } from '../../../writes/domain/errors/UserInvalid';
+import { UserNameAlreadyUsed } from '../../../writes/domain/errors/UserNameAlreadyUsed';
+import { RegisterUserCommand } from '../../../writes/usecases/RegisterUserCommand';
+import { RegisterUserCommandHandler } from '../../../writes/usecases/RegisterUserCommandHandler';
 
 const spy = RegisterUserCommandHandler.prototype.handle = jest.fn();
 
