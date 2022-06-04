@@ -10,6 +10,17 @@ export class UserRepositoryTypeOrm implements UserRepository {
         private readonly typeOrmDataSource: DataSource) {
         
     }
+    async getByUsernameOrEmail(login: string): Promise<User | null> {
+        const user = await this.typeOrmDataSource
+            .getRepository(UserEntity)
+            .createQueryBuilder("user")
+            .where("user.name = :login")
+            .orWhere("user.email = :login")
+            .setParameters({ login: login })
+            .getOne();
+
+        return user ?? null;
+    }
 
     async nextId(): Promise<string> {
         return await this.uuidGenerator.generate();
