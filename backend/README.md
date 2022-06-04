@@ -57,6 +57,14 @@ Show us your skills even if some of these practices seem overkill for such a sma
 
 # Candidate 
 
+## HOW TO
+
+### Run the application
+
+```
+docker compose up -d
+```
+
 ## WebServer
 
 I chose express because I have more experience on it. 
