@@ -54,3 +54,11 @@ if you think about things that should be done but don't have the time, please wr
 ### Side note
 You heard about hexagonal / clean architecture, TDD, BDD, craftsmanship ?
 Show us your skills even if some of these practices seem overkill for such a small app. ;)
+
+# Candidate 
+
+## WebServer
+
+I chose express because I have more experience on it. 
+I do not have a preference between one framework more than an other, using express or fastify is the same.
+But, in order to not spend time on middlewares and server bootstrapping, I decided to use a boileplate I already made before.
