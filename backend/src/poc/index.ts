@@ -1,5 +1,5 @@
 import { ok } from "assert";
-import Fastify from "fastify";
+import Fastify, { FastifyRequest } from "fastify";
 
 const pg = require("knex")({
   client: "pg",
@@ -44,7 +44,9 @@ Fastify({})
         password: { type: "string" },
       },
     },
-    handler: async (request, reply) => {
+    handler: async (request : FastifyRequest<{ Querystring: { name: string, email: string } }>, reply) => {
+      console.log('ici')
+      const query = request.query
       ok(
         (request.query["name"].length > 4 &&
           request.query["name"].length < 50) ||
@@ -71,14 +73,14 @@ Fastify({})
         },
       },
     },
-    handler: (request, reply) =>
+    handler: (request: FastifyRequest<{ Querystring: { email: string, password: string }, Reply: string }>, reply) =>
       pg("persons")
         .where({
           email: request.query["email"],
           password: request.query["password"],
         })
         .first("name")
-        .then((result) => {
+        .then((result: string) => {
           reply.send(result);
         }),
   })
