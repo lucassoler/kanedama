@@ -12,19 +12,19 @@ services.dataSource.initialize()
       const expressServer = new ExpressServer().create(services);
       
       const server = expressServer.listen(expressServer.get("port"), () => {
-        console.info(`Application starts on port ${expressServer.get("port")}`, { type: "SYSTEM" });
+        services.logger.info(`Application starts on port ${expressServer.get("port")}`, { type: "SYSTEM" });
       });
 
       process.on("SIGTERM", () => {
-        console.warn("Application stopped", { type: "SYSTEM" });
-          server.close((error) => {
-              if (error) {
-                  console.error(error.message, { type: "SYSTEM" });
-                  process.exit(1);
-              }
-      
-              process.exit(0);
-          });
+        console.info(`Application stopped`, { type: "SYSTEM" });
+        server.close((error) => {
+            if (error) {
+                console.error(error.message, { type: "SYSTEM" });
+                process.exit(1);
+            }
+    
+            process.exit(0);
+        });
       });
     })
     .catch((error: Error) => console.log(error));

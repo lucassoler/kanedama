@@ -10,6 +10,7 @@ export interface EnvironmentVariables {
     readonly POSTGRES_LOGGING: boolean;
     readonly TYPEORM_ENTITIES: string;
     readonly SALT_ROUNDS: number;
+    readonly LOG_LEVEL: string;
 }
 
 
@@ -25,6 +26,7 @@ export class NodeEnvironmentVariables implements EnvironmentVariables {
     readonly POSTGRES_LOGGING = this.getBooleanOrError("POSTGRES_LOGGING");
     readonly TYPEORM_ENTITIES = this.getStringOrError("TYPEORM_ENTITIES");
     readonly SALT_ROUNDS = this.getNumberOrError("SALT_ROUNDS");
+    readonly LOG_LEVEL = this.getStringOrError("LOG_LEVEL");
 
     private getStringOrError(value: string): string {
         return this.getEnvValue(value);

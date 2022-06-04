@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import {validationResult} from "express-validator";
 import createError, { HttpError } from 'http-errors';
 import { DomainError, DomainNotFoundError, DomainValidationError } from "../../sharedKernel/domainError";
+import { Logger } from "../../sharedKernel/services/logger";
 
 export class ExpressMiddlewares {
 
@@ -34,7 +35,7 @@ export class ExpressMiddlewares {
         }
     }
 
-    static domainErrorHandling() {
+    static domainErrorHandling(logger: Logger) {
         return (error: DomainError, request: Request, response: Response, next: NextFunction): Response => {
             let httpError: HttpError = new createError.InternalServerError("Internal Server Error");
 
@@ -50,7 +51,7 @@ export class ExpressMiddlewares {
                 message: httpError.message
             };
 
-            if (error.innerExceptions.length > 0) {
+            if (error.innerExceptions && error.innerExceptions.length > 0) {
                 responseBody.errors = error.innerExceptions.map(e => {
                     return {
                         code: e.code,
@@ -59,13 +60,17 @@ export class ExpressMiddlewares {
                 })
             }
 
+            logger.error("Domain Error Handling: error while processing the request", { code: error.code, custom_message: error.message, http_status_code: httpError.statusCode.toString() })
+
             return response.status(httpError.statusCode).send(responseBody);
         }
     }
 
-    static notCatchedExceptions() {
+    static notCatchedExceptions(logger: Logger) {
         return (error: DomainError, request: Request, response: Response, next: NextFunction): Response => {
             let httpError: HttpError = new createError.InternalServerError("Internal Server Error");
+
+            logger.error("Not Catched Exception : error while processing the request", { code: error.code, custom_message: error.message, http_status_code: httpError.statusCode.toString() })
 
             const responseBody: CustomErrorResponse = {
                 status_code: httpError.statusCode,

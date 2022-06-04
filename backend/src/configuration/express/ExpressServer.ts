@@ -14,6 +14,8 @@ import { router } from './expressRouter';
     create(services: Dependencies): Express {
         const server = express();
 
+        services.logger.expressLogger(server);
+
         server.set('port', process.env.API_PORT || 8801);
         server.use(helmet());
 
@@ -29,8 +31,8 @@ import { router } from './expressRouter';
 
         server.use('/api', router(services));
 
-        server.use(ExpressMiddlewares.domainErrorHandling());
-        server.use(ExpressMiddlewares.notCatchedExceptions());
+        server.use(ExpressMiddlewares.domainErrorHandling(services.logger));
+        server.use(ExpressMiddlewares.notCatchedExceptions(services.logger));
 
         return server;
     }

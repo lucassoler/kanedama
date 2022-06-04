@@ -12,7 +12,7 @@ services:
       - postgres
     environment:
       POSTGRES_HOST: postgres
-      TYPEORM_ENTITIES: dist/configuration/entities/*.js
+      TYPEORM_ENTITIES: dist/configuration/typeorm/entities/*.js
   postgres:
     image: postgres
     environment:
