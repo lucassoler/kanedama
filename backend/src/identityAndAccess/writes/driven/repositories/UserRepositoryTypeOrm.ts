@@ -1,10 +1,13 @@
 import { UuidGenerator } from "../services/UuidGenerator";
 import { UserRepository } from "../../domain/repositories/UserRepository";
 import { User } from "../../domain/User";
+import { Column, DataSource, Entity, PrimaryGeneratedColumn } from "typeorm";
+import { UserEntity } from "../../../../configuration/typeorm/entities/UserEntity";
 
 export class UserRepositoryTypeOrm implements UserRepository {
 
-    constructor(private readonly uuidGenerator: UuidGenerator) {
+    constructor(private readonly uuidGenerator: UuidGenerator,
+        private readonly typeOrmDataSource: DataSource) {
         
     }
 
@@ -12,8 +15,19 @@ export class UserRepositoryTypeOrm implements UserRepository {
         return await this.uuidGenerator.generate();
     }
 
-    save(user: User): Promise<void> {
-        throw new Error("Method not implemented.");
+    async save(user: User): Promise<void> {
+        await this.typeOrmDataSource.createQueryBuilder()
+        .insert()
+        .into(UserEntity)
+        .values({
+            id: user.id,
+            name: user.name,
+            email: user.email,
+            password: user.password
+        })
+        .execute();
+
+        return Promise.resolve();
     }
 
     isUsernameAlreadyUsed(name: string): Promise<boolean> {

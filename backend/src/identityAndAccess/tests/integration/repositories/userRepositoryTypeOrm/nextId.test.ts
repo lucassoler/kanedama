@@ -1,3 +1,5 @@
+import { NodeEnvironmentVariables } from "../../../../../configuration/environment/environmentVariables";
+import { getDataSource } from "../../../../../configuration/typeorm/connection";
 import { UserRepositoryTypeOrm } from "../../../../writes/driven/repositories/UserRepositoryTypeOrm";
 import { FakeUuidGenerator } from "../../../../writes/driven/services/FakeUuidGenerator";
 
@@ -7,7 +9,7 @@ describe('UserRepositoryTypeOrm - NextId', () => {
 
     beforeEach(() => {
         fakeUuidGenerator = new FakeUuidGenerator();
-        repository = new UserRepositoryTypeOrm(fakeUuidGenerator);
+        repository = new UserRepositoryTypeOrm(fakeUuidGenerator, getDataSource(new NodeEnvironmentVariables()));
     });
 
     test('should return a new uuid', async () => {

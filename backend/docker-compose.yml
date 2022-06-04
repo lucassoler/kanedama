@@ -11,10 +11,13 @@ services:
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: postgres://postgres@postgres/test_lucas_soler
+      POSTGRES_HOST: postgres
+      TYPEORM_ENTITIES: dist/configuration/entities/*.js
   postgres:
     image: postgres
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: password
       POSTGRES_DB: test_lucas_soler
+    ports:
+      - "5432:5432"

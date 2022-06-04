@@ -2,6 +2,7 @@ import dotenv from "dotenv";
 import { ExpressServer } from "./express/ExpressServer";
 import { serviceLocator } from "./services/serviceLocator";
 import { getDataSource } from "./typeorm/connection";
+import "reflect-metadata"
 
 dotenv.config();
 

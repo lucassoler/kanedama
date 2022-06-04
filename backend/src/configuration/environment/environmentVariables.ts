@@ -8,6 +8,7 @@ export interface EnvironmentVariables {
     readonly POSTGRES_DATABASE: string;
     readonly POSTGRES_SYNCHRONIZE_AUTO: boolean;
     readonly POSTGRES_LOGGING: boolean;
+    readonly TYPEORM_ENTITIES: string;
 }
 
 
@@ -21,6 +22,7 @@ export class NodeEnvironmentVariables implements EnvironmentVariables {
     readonly POSTGRES_DATABASE = this.getStringOrError("POSTGRES_DATABASE");
     readonly POSTGRES_SYNCHRONIZE_AUTO = this.getBooleanOrError("POSTGRES_SYNCHRONIZE_AUTO");
     readonly POSTGRES_LOGGING = this.getBooleanOrError("POSTGRES_LOGGING");
+    readonly TYPEORM_ENTITIES = this.getStringOrError("TYPEORM_ENTITIES");
 
     private getStringOrError(value: string): string {
         return this.getEnvValue(value);

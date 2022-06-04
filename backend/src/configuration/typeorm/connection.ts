@@ -11,7 +11,7 @@ export const getDataSource = (environmentVariables: EnvironmentVariables) => {
         database: environmentVariables.POSTGRES_DATABASE,
         synchronize: environmentVariables.POSTGRES_SYNCHRONIZE_AUTO,
         logging: environmentVariables.POSTGRES_LOGGING,
-        entities: [],
+        entities: [environmentVariables.TYPEORM_ENTITIES],
         subscribers: [],
         migrations: [],
     });
