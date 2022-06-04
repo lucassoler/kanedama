@@ -318,15 +318,7 @@ class CreateUserFactory {
     }
 
     async create(name: string, email: string, password: string): Promise<User> {
-        var errors: Array<DomainError> = [
-            ...await this.verifyUsername(name),
-            ...await this.verifyEmail(email),
-            ...this.verifyPassword(password)
-        ];
-    
-        if (errors.length > 0) {
-            throw new UserInvalid(errors);
-        }
+        await this.verifyUserToBeCreated(name, email, password);
 
         const id = await this.repository.nextId();
         const encryptedPassword = await this.encryptionService.encrypt(password);
@@ -339,6 +331,18 @@ class CreateUserFactory {
         };
     
         return user;
+    }
+
+    private async verifyUserToBeCreated(name: string, email: string, password: string) {
+        var errors: Array<DomainError> = [
+            ...await this.verifyUsername(name),
+            ...await this.verifyEmail(email),
+            ...this.verifyPassword(password)
+        ];
+
+        if (errors.length > 0) {
+            throw new UserInvalid(errors);
+        }
     }
 
     verifyPassword(password: string): Array<DomainError> {
