@@ -1,7 +1,6 @@
 import { NextFunction, Request, Response } from "express";
 import {validationResult} from "express-validator";
 import createError from 'http-errors';
-import { Dependencies } from "../services/serviceLocator";
 
 export class ExpressMiddlewares {
 
@@ -14,7 +13,7 @@ export class ExpressMiddlewares {
 
                 response.status(httpError.status).send({
                     status_code: httpError.status,
-                    error: httpError.name.replace("Error", ""),
+                    error_name: httpError.name.replace("Error", ""),
                     errors: errors.array().map(e => {
                         return {
                             param: e.param,
