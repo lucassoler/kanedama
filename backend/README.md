@@ -117,3 +117,4 @@ I use a try/catch system to handle errors. An other implementation should be to 
 - implement a swagger documentation
 - add a database migration system (for now it's managed by typeORM)
 - discuss with domain experts to improve validation and security
+- I put login in the command part beacause a login should generate a bearer token and updates the user entity. In this case it's more a query
