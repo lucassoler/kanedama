@@ -14,6 +14,12 @@ import { User } from "../User";
 
 
 export class CreateUserFactory {
+    private static readonly PASSWORD_MIN_LENGTH = 8;
+    private static readonly PASSWORD_MAX_LENGTH = 255;
+    private static readonly EMAIL_MAX_LENGTH = 256;
+    private static readonly NAME_MIN_LENGTH = 4;
+    private static readonly NAME_MAX_LENGTH = 50;
+
     constructor(private readonly repository: UserRepository,
         private readonly encryptionService: EncryptionService) {
     }
@@ -49,11 +55,11 @@ export class CreateUserFactory {
     verifyPassword(password: string): Array<DomainError> {
         var errors: Array<DomainError> = [];
 
-        if (password.length < 8) {
+        if (password.length < CreateUserFactory.PASSWORD_MIN_LENGTH) {
             errors.push(new PasswordIsNotLongEnough(password));
         }
 
-        if (password.length > 255) {
+        if (password.length > CreateUserFactory.PASSWORD_MAX_LENGTH) {
             errors.push(new PasswordIsTooLong(password));
         }
 
@@ -67,7 +73,7 @@ export class CreateUserFactory {
             errors.push(new EmailIsNotInAValidFormat(email));
         }
 
-        if (email.length > 256) {
+        if (email.length > CreateUserFactory.EMAIL_MAX_LENGTH) {
             errors.push(new EmailIsTooLong(email));
         }
 
@@ -81,11 +87,11 @@ export class CreateUserFactory {
     async verifyUsername(name: string): Promise<Array<DomainError>> {
         var errors: Array<DomainError> = [];
 
-        if (name.length < 4) {
+        if (name.length < CreateUserFactory.NAME_MIN_LENGTH) {
             errors.push(new UserNameIsNotLongEnough(name));
         }
 
-        if (name.length > 50) {
+        if (name.length > CreateUserFactory.NAME_MAX_LENGTH) {
             errors.push(new UserNameIsTooLong(name));
         }
 

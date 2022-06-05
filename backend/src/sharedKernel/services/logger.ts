@@ -16,7 +16,8 @@ export class WinstonLogger implements Logger {
         transports: [
             new winston.transports.Console()
         ],
-        level: this.environmentVariables.LOG_LEVEL || 'info'
+        level: this.environmentVariables.LOG_LEVEL || 'info',
+        silent: this.environmentVariables.LOG_SILENT
     }
     
     constructor(private readonly environmentVariables: EnvironmentVariables) {
@@ -24,6 +25,8 @@ export class WinstonLogger implements Logger {
     }
 
     expressLogger(expressServer: Express): void {
+        if (this.loggerOptions.silent) return;
+        
         expressServer.use(expressWinston.logger({
             ...this.loggerOptions,
             level: 'info',
